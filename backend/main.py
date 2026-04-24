@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import List, Dict, Any
@@ -225,9 +227,21 @@ def extract_json(text: str):
         return match.group(0)
     return text.strip().replace("```json", "").replace("```", "").strip()
 
-@app.get("/")
-def home():
-    return {"message": "Lexifyd backend running with Gemini!", "total_words": len(TAMIL_WORDS)}
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+# Serving Frontend if in production (HuggingFace/Docker)
+if os.path.exists("./static"):
+    app.mount("/assets", StaticFiles(directory="./static/assets"), name="assets")
+    
+    @app.get("/")
+    def serve_frontend():
+        return FileResponse("./static/index.html")
+else:
+    @app.get("/")
+    def home():
+        return {"message": "Lexifyd backend running with Gemini!", "total_words": len(TAMIL_WORDS)}
 
 
 @app.get("/words")
