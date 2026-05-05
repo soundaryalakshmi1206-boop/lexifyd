@@ -234,7 +234,7 @@ def health():
 # Serving Frontend if in production (HuggingFace/Docker)
 if os.path.exists("./static"):
     app.mount("/assets", StaticFiles(directory="./static/assets"), name="assets")
-    
+    app.mount("/", StaticFiles(directory="./static", html=True), name="static")
     @app.get("/")
     def serve_frontend():
         return FileResponse("./static/index.html")
